@@ -1,0 +1,26 @@
+# ninja log v5
+1	885	7185579895003522	CMakeFiles/RedNoise.dir/libs/sdw/CanvasTriangle.cpp.obj	fc0d618735538561
+9	930	7185579895205062	CMakeFiles/RedNoise.dir/libs/sdw/CanvasPoint.cpp.obj	4ee9124269c922d1
+60	916	7185579895205062	CMakeFiles/RedNoise.dir/libs/sdw/Utils.cpp.obj	21093373153fdac6
+52	925	7185579895517559	CMakeFiles/RedNoise.dir/libs/sdw/ModelTriangle.cpp.obj	a7d4da6366e4770f
+43	932	7185579895673805	CMakeFiles/RedNoise.dir/libs/sdw/TextureMap.cpp.obj	a447d16c140db334
+34	937	7185579895673805	CMakeFiles/RedNoise.dir/libs/sdw/RayTriangleIntersection.cpp.obj	1ed8d2f87556e60e
+26	947	7185579895517559	CMakeFiles/RedNoise.dir/libs/sdw/DrawingWindow.cpp.obj	bd0f93f31f3f091d
+18	948	7185579896006436	CMakeFiles/RedNoise.dir/libs/sdw/Colour.cpp.obj	86f6a3d470695341
+78	956	7185579896146566	CMakeFiles/RedNoise.dir/libs/sdw/TexturePoint.cpp.obj	73e8fd3f37ee11f7
+1	500	7185808417452542	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.obj	901d9361443ec72
+501	1258	7185808420309187	RedNoise.exe	17507a74a3a028fb
+1	606	7185809278442223	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.obj	901d9361443ec72
+607	1331	7185809280742085	RedNoise.exe	17507a74a3a028fb
+1	609	7185817201051582	CMakeFiles/RedNoise.dir/libs/sdw/CanvasTriangle.cpp.obj	fc0d618735538561
+10	643	7185817201268569	CMakeFiles/RedNoise.dir/libs/sdw/CanvasPoint.cpp.obj	4ee9124269c922d1
+1	462	7185817950638929	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.obj	901d9361443ec72
+463	1300	7185817953752560	RedNoise.exe	17507a74a3a028fb
+3	1011	7185832095015454	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.obj	901d9361443ec72
+1012	2060	7185832097838844	RedNoise.exe	17507a74a3a028fb
+3	1155	7185841346729622	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.obj	901d9361443ec72
+1156	2369	7185841350329823	RedNoise.exe	17507a74a3a028fb
+3	924	7185847220074514	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.obj	901d9361443ec72
+925	2226	7185847223744876	RedNoise.exe	17507a74a3a028fb
+3	651	7185851170602019	CMakeFiles/RedNoise.dir/src/RedNoise.cpp.obj	901d9361443ec72
+652	1693	7185851173583060	RedNoise.exe	17507a74a3a028fb
