@@ -78,8 +78,8 @@ std::pair<CanvasTriangle, CanvasTriangle> getTwoFlatTriangles(CanvasTriangle tri
 		right = midArt;
 	}
 	// Note this return order is predefined and used in code. Better practice would be to make custom return class to prevent errors.
-	flatTris.first = CanvasTriangle(CanvasPoint(top), CanvasPoint(left), CanvasPoint(right));
-	flatTris.second = CanvasTriangle(CanvasPoint(bottom), CanvasPoint(left), CanvasPoint(right));
+	flatTris.first = CanvasTriangle(top, left, right);
+	flatTris.second = CanvasTriangle(bottom, left, right);
 	return flatTris;
 }
 
@@ -121,6 +121,26 @@ void drawFilledTriangle(DrawingWindow& window, CanvasTriangle triangle, Colour c
 	drawBottomFlatTriangle(window, tris.second, colour);
 }
 
+void setCanvasPointTexture(CanvasPoint& pt, CanvasPoint top, CanvasPoint bottom) {
+	if (top.y == bottom.y) {
+		std::cout << "HERE" << std::endl;
+		pt.texturePoint.y = top.texturePoint.y;
+	} else {
+		pt.texturePoint.y = top.texturePoint.y +
+			(((pt.y - top.y) / (bottom.y - top.y)) * (bottom.texturePoint.y - top.texturePoint.y));
+	}
+
+	// Prevents division by zero error
+	if (top.x == bottom.x) {
+		pt.texturePoint.x = top.texturePoint.x;
+		std::cout << "HERE" << std::endl;
+	} else {
+		pt.texturePoint.x = top.texturePoint.x +
+			(((pt.x - top.x) / (bottom.x - top.x)) * (bottom.texturePoint.x - top.texturePoint.x));
+	}
+
+}
+
 void drawTexturedTriangle(DrawingWindow& window, CanvasTriangle triangle, TextureMap texture) {
 	std::pair<CanvasTriangle, CanvasTriangle> tris = getTwoFlatTriangles(triangle);
 	CanvasPoint left = tris.first.vertices[1];
@@ -128,13 +148,12 @@ void drawTexturedTriangle(DrawingWindow& window, CanvasTriangle triangle, Textur
 	CanvasPoint bottom = tris.second.vertices[0];
 	CanvasPoint top = tris.first.vertices[0];
 	// Either left or right variable is artificially created and thus does not have a texturepoint associated with it.
-	// Checks for this and creates the corresponding texturepoint. In code, this is signified by the x and y coords
-	// of the texture being (-1, -1). This code corrects the texturepoint.
-	// TODO IMPLEMENT THIS
-	bool isLeftArtificial = false;
-	// Stores points from original triangle which are left / right
-	CanvasPoint leftOriginal = isLeftArtificial ? bottom : left;
-	CanvasPoint rightOriginal = isLeftArtificial ? right : bottom;
+	// Checks for this and creates the corresponding texturepoint.
+	bool isLeftArtificial = (right.texturePoint.x == triangle.vertices[0].x && right.texturePoint.y == triangle.vertices[0].y)
+		|| (right.texturePoint.x == triangle.vertices[1].x && right.texturePoint.y == triangle.vertices[1].y)
+		|| (right.texturePoint.x == triangle.vertices[2].x && right.texturePoint.y == triangle.vertices[2].y);
+	if (isLeftArtificial) setCanvasPointTexture(left, top, bottom);
+	else setCanvasPointTexture(right, top, bottom);
 	// Draws top triangle
 	float changeXPerRowLeft = (left.x - top.x) / (left.y - top.y);
 	float changeXPerRowRight = (right.x - top.x) / (right.y - top.y);
@@ -144,27 +163,49 @@ void drawTexturedTriangle(DrawingWindow& window, CanvasTriangle triangle, Textur
 		// Calculates number of pixels to sample from texture
 		int noPixels = round(xRight - xLeft);
 		noPixels = noPixels == 0 ? 1 : noPixels; // Ensures at least one point is sampled per row
-		// Calculates what percent of way down x and y it is on original triangle - left
-		float topToLeftPercentX = abs((xLeft - top.x) / (leftOriginal.x - top.x));
-		float topToLeftPercentY = abs((row - top.y) / (leftOriginal.y - top.y));
-		// Calculates what percent of way down x and y it is on original triangle - right
-		float topToRightPercentX = abs((xRight - top.x) / (rightOriginal.x - top.x));
-		float topToRightPercentY = abs((row - top.y) / (rightOriginal.y - top.y));
-		// Calculates corresponding texture mapping (as it will also be same percentage down on those points)
-		float xTextureLeft = top.texturePoint.x + (topToLeftPercentX * (leftOriginal.texturePoint.x - top.texturePoint.x));
-		float yTextureLeft = top.texturePoint.y + (topToLeftPercentY * (leftOriginal.texturePoint.y - top.texturePoint.y));
-		float xTextureRight = top.texturePoint.x + (topToRightPercentX * (rightOriginal.texturePoint.x - top.texturePoint.x));
-		float yTextureRight = top.texturePoint.y + (topToRightPercentY * (rightOriginal.texturePoint.y - top.texturePoint.y));
+		// Calculates points and corresponding texture points
+		CanvasPoint leftPt = CanvasPoint(xLeft, row);
+		CanvasPoint rightPt = CanvasPoint(xRight, row);
+		setCanvasPointTexture(leftPt, top, left);
+		setCanvasPointTexture(rightPt, top, right);
 		// Calculates line equation defined by points
-		float xDiff = xTextureRight - xTextureLeft;
-		float yDiff = yTextureRight - yTextureLeft;
+		float xDiff = rightPt.texturePoint.x - leftPt.texturePoint.x;
+		float yDiff = rightPt.texturePoint.y - leftPt.texturePoint.y;
 		float xStepSize = xDiff / noPixels;
 		float yStepSize = yDiff / noPixels;
 		// Samples each pixel from texture map and draws it
-		for (float pix = 0.0; pix <= noPixels; pix++) {
-			float xText = xTextureLeft + (xStepSize * pix);
-			float yText = yTextureLeft + (yStepSize * pix);
-			window.setPixelColour(round(pix) + xLeft, row, texture.pixels[(yText * texture.height) + xText]);
+		for (float pix = 0.0; round(pix) <= noPixels; pix++) {
+			int xText = round(leftPt.texturePoint.x + (xStepSize * pix));
+			int yText = round(leftPt.texturePoint.y + (yStepSize * pix));
+			window.setPixelColour(round(pix) + xLeft, row, texture.pixels[(yText * texture.width) + xText]);
+		}
+		xLeft += changeXPerRowLeft;
+		xRight += changeXPerRowRight;
+	}
+	// Draws bottom triangle
+	changeXPerRowLeft = (left.x - bottom.x) / (left.y - bottom.y);
+	changeXPerRowRight = (right.x - bottom.x) / (right.y - bottom.y);
+	xLeft = left.x;
+	xRight = right.x;
+	for (int row = round(left.y); row <= round(bottom.y); row++) {
+		// Calculates number of pixels to sample from texture
+		int noPixels = round(xRight - xLeft);
+		noPixels = noPixels == 0 ? 1 : noPixels; // Ensures at least one point is sampled per row
+		// Calculates points and corresponding texture points
+		CanvasPoint leftPt = CanvasPoint(xLeft, row);
+		CanvasPoint rightPt = CanvasPoint(xRight, row);
+		setCanvasPointTexture(leftPt, left, bottom);
+		setCanvasPointTexture(rightPt, right, bottom);
+		// Calculates line equation defined by points
+		float xDiff = rightPt.texturePoint.x - leftPt.texturePoint.x;
+		float yDiff = rightPt.texturePoint.y - leftPt.texturePoint.y;
+		float xStepSize = xDiff / noPixels;
+		float yStepSize = yDiff / noPixels;
+		// Samples each pixel from texture map and draws it
+		for (float pix = 0.0; round(pix) <= noPixels; pix++) {
+			int xText = round(leftPt.texturePoint.x + (xStepSize * pix));
+			int yText = round(leftPt.texturePoint.y + (yStepSize * pix));
+			window.setPixelColour(round(pix) + xLeft, row, texture.pixels[(yText * texture.width) + xText]);
 		}
 		xLeft += changeXPerRowLeft;
 		xRight += changeXPerRowRight;
