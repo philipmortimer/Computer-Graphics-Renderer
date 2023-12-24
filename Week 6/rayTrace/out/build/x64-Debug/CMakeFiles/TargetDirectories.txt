@@ -1,0 +1,3 @@
+C:/Users/phili/Documents/University/Third Year/TB1/Computer Graphics/Code/Code Repo/Week 6/rayTrace/out/build/x64-Debug/CMakeFiles/RedNoise.dir
+C:/Users/phili/Documents/University/Third Year/TB1/Computer Graphics/Code/Code Repo/Week 6/rayTrace/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Users/phili/Documents/University/Third Year/TB1/Computer Graphics/Code/Code Repo/Week 6/rayTrace/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
