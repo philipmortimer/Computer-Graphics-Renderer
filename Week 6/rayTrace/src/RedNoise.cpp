@@ -212,13 +212,13 @@ std::vector<ModelTriangle> readObjFile(std::string filename, float scalingFactor
 CanvasPoint getCanvasIntersectionPoint(glm::vec3 cameraPosition, glm::vec3 vertexPosition, float focalLength, float scale, glm::mat3 cameraOrientation) {
 	// Vertex position is in model coordinates (0, 0, 0) is centre of room.
 	// Converts this to camera coordinate system (0, 0, 0) is the camera position. (note cameraPosition variable holds coordinates in model space too)
-	glm::vec3 vertexPositionCameraSystem = cameraPosition - vertexPosition;
+	glm::vec3 vertexPositionCameraSystem = vertexPosition - cameraPosition;
 	// Adjusts intersection vector to account for camera orientation
 	glm::vec3 vertexPosAdjustedOrientation = vertexPositionCameraSystem * cameraOrientation;
 	// Calculates points on image plane (u, v)
 	float u = -scale * focalLength * (vertexPosAdjustedOrientation.x / vertexPosAdjustedOrientation.z) + WIDTH / 2.0;
 	float v = scale * focalLength * (vertexPosAdjustedOrientation.y / vertexPosAdjustedOrientation.z) + HEIGHT / 2.0;
-	return CanvasPoint(u, v, vertexPosAdjustedOrientation.z);
+	return CanvasPoint(u, v, -vertexPosAdjustedOrientation.z);
 }
 
 glm::vec3 getCanvasPointDirectionFromCam(int x, int y, glm::vec3 cameraPosition, float focalLength, float scale, glm::mat3 cameraOrientation) {
@@ -227,13 +227,15 @@ glm::vec3 getCanvasPointDirectionFromCam(int x, int y, glm::vec3 cameraPosition,
 	float v = y;
 	// Calculates vertex points
 	float vertZ = focalLength;
-	float vertX = vertZ * (u - (WIDTH / 2.0)) / (scale * focalLength);
-	float vertY = vertZ * (v - (HEIGHT / 2.0)) / (-scale * focalLength);
+	float vertX = vertZ * (u - (WIDTH / 2.0)) / (-scale * focalLength);
+	float vertY = vertZ * (v - (HEIGHT / 2.0)) / (scale * focalLength);
 	glm::vec3 vertexPosAdjustedOrientation(vertX, vertY, vertZ);
 	// Undoes orientation effect
 	glm::vec3 vertexPositionCameraSystem = vertexPosAdjustedOrientation * glm::inverse(cameraOrientation);
+	// Gets point in world coords
+	glm::vec3 vertWorldCoords = cameraPosition - vertexPositionCameraSystem;
 	// Direction is point minus camera loc
-	return glm::normalize(vertexPositionCameraSystem - cameraPosition);
+	return glm::normalize(vertWorldCoords - cameraPosition);
 }
 
 glm::mat3 rotMatY(float theta) {

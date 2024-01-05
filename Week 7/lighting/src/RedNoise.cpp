@@ -229,13 +229,15 @@ glm::vec3 getCanvasPointDirectionFromCam(int x, int y, glm::vec3 cameraPosition,
 	float v = y;
 	// Calculates vertex points
 	float vertZ = focalLength;
-	float vertX = vertZ * (u - (WIDTH / 2.0)) / (scale * focalLength);
-	float vertY = vertZ * (v - (HEIGHT / 2.0)) / (-scale * focalLength);
+	float vertX = vertZ * (u - (WIDTH / 2.0)) / (-scale * focalLength);
+	float vertY = vertZ * (v - (HEIGHT / 2.0)) / (scale * focalLength);
 	glm::vec3 vertexPosAdjustedOrientation(vertX, vertY, vertZ);
 	// Undoes orientation effect
 	glm::vec3 vertexPositionCameraSystem = vertexPosAdjustedOrientation * glm::inverse(cameraOrientation);
+	// Gets point in world coords
+	glm::vec3 vertWorldCoords = cameraPosition - vertexPositionCameraSystem;
 	// Direction is point minus camera loc
-	return glm::normalize(vertexPositionCameraSystem - cameraPosition);
+	return glm::normalize(vertWorldCoords - cameraPosition);
 }
 
 glm::mat3 rotMatY(float theta) {
@@ -299,7 +301,7 @@ float proximityLighting(RayTriangleIntersection intersection, glm::vec3 lightPos
 	// Implements proximity lighting
 	float distFromLight = glm::distance(lightPos, intersection.intersectionPoint);
 	float proxIntensity = 1.0;
-	if (distFromLight > 0.0) proxIntensity = (1.0 * 20.0) / (4.0 * M_PI * distFromLight * distFromLight);
+	if (distFromLight > 0.0) proxIntensity = (1.0 * 30.0) / (4.0 * M_PI * distFromLight * distFromLight);
 	if (proxIntensity > 1.0) proxIntensity = 1.0;
 	if (proxIntensity < 0.0) proxIntensity = 0.0;
 	return proxIntensity;
@@ -320,9 +322,14 @@ std::array<float, 3> baryCoords(ModelTriangle tri, glm::vec3 p) {
 	glm::vec3 b = tri.vertices[1];
 	glm::vec3 c = tri.vertices[2];
 	// Calculates subtriangle areas
+	/*
 	float areaABC = glm::dot(tri.normal, glm::cross(b - a, c - a));
 	float areaBCP = glm::dot(tri.normal, glm::cross(b - p, c - p));
 	float areaCAP = glm::dot(tri.normal, glm::cross(c - p, a - p));
+	*/
+	float areaABC = glm::length(glm::cross(b - a, c - a)) / 2.0f;
+	float areaBCP = glm::length(glm::cross(b - p, c - p)) / 2.0f;
+	float areaCAP = glm::length(glm::cross(c - p, a - p)) / 2.0f;
 	// Calculates barycentric coords
 	float ba = areaBCP / areaABC;
 	float bb = areaCAP / areaABC;
@@ -447,8 +454,8 @@ void drawRaytracedScene(DrawingWindow& window, glm::vec3 cameraPosition, glm::ma
 			glm::vec3 dir = getCanvasPointDirectionFromCam(x, y, cameraPosition, focalLength, scaleFactor, camOrientation);
 			std::pair<RayTriangleIntersection, bool> intersection = getClosestValidIntersection(cameraPosition, dir, model, -1, 0.0);
 			if (intersection.second) {
-				float diffuseLighting = 0.1f * proximityLighting(intersection.first, lightPos) +
-					0.9f * angleOfIncidenceLightingPhong(intersection.first, lightPos, vertNorms);
+				float diffuseLighting = 0.7f * proximityLighting(intersection.first, lightPos) +
+					0.3f * angleOfIncidenceLightingPhong(intersection.first, lightPos, vertNorms);
 				float specularLighting = specularLightingPhong(intersection.first, lightPos, vertNorms, cameraPosition);
 				float intensity = diffuseLighting + specularLighting;
 				Colour colour = scaleIntensity(intensity, intersection.first.intersectedTriangle.colour, 0.2);
